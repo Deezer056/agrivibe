@@ -1,6 +1,5 @@
 from ast import Return
 from functools import lru_cache
-from this import d
 
 from langchain_pinecone import PineconeVectorStore
 

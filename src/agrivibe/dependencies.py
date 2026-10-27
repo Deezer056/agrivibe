@@ -1,4 +1,3 @@
-from ast import Return
 from functools import lru_cache
 
 from langchain_pinecone import PineconeVectorStore
@@ -6,6 +5,9 @@ from langchain_pinecone import PineconeVectorStore
 from agrivibe.config import Settings
 from agrivibe.db.vectorstore import create_vector_store
 from agrivibe.service.knowledge import KnowledgeService
+from agrivibe.agents.fieldoracle.agent import build_fieldoracle_agent
+from agrivibe.core.llm import create_chat_model
+from agrivibe.service.answering import AnswerService
 
 @lru_cache
 def get_settings() -> Settings:
@@ -17,9 +19,15 @@ def get_vector_store() -> PineconeVectorStore:
 
 @lru_cache
 def get_knowledge_service() -> KnowledgeService:
-    Settings = get_settings()
+    settings = get_settings()
     return KnowledgeService(
         vector_store=get_vector_store(),
-        chunk_size=Settings.chunk_size,
-        chunk_overlap=Settings.chunk_overlap,
+        chunk_size=settings.chunk_size,
+        chunk_overlap=settings.chunk_overlap,
     )
+
+@lru_cache
+def get_answer_service() -> AnswerService:
+    settings = get_settings()
+    agent = build_fieldoracle_agent(create_chat_model(settings), get_vector_store(), k=settings.search_k)
+    return AnswerService(agent)

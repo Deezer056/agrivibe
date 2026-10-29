@@ -1,0 +1,101 @@
+[
+  {
+    "id": "q01",
+    "question": "Should the Kalawewa field get its next top dressing before the rain forecast for 4 to 6 October?",
+    "answerable": true,
+    "evidence": [
+      "Maha 2026/27 crop: Bg 352, 3½-month",
+      "first top dressing applied, quantity as advised by the Agriculture Instructor",
+      "Nitrogen should not be applied immediately before heavy rainfall",
+      "Pattern 6: Heavy rainfall forecast before a planned application"
+    ]
+  },
+  {
+    "id": "q02",
+    "question": "The Matugama farmer says lower leaves look yellow after heavy rain. Should she add urea?",
+    "answerable": true,
+    "evidence": [
+      "recorded symptoms consistent with iron toxicity",
+      "standing water in the lower eastern section, not draining",
+      "Adding urea is not the remedy for iron toxicity"
+    ]
+  },
+  {
+    "id": "q03",
+    "question": "Does improved AWD suit the Sammanthurai field?",
+    "answerable": true,
+    "evidence": [
+      "not suitable for saline paddy fields",
+      "recorded symptoms consistent with salinity in that section"
+    ]
+  },
+  {
+    "id": "q04",
+    "question": "Which fertiliser schedule applies to Sammanthurai?",
+    "answerable": true,
+    "evidence": [
+      "Ampara, Batticaloa and Vavuniya appear on the Intermediate and Dry Zone rainfed list",
+      "is irrigated but Ampara district is not on the irrigated Intermediate and Dry Zone list",
+      "District gaps in the irrigated IZ/DZ schedule"
+    ]
+  },
+  {
+    "id": "q05",
+    "question": "How much fertiliser subsidy did Kalawewa get for Yala, and why not for the whole field?",
+    "answerable": true,
+    "evidence": [
+      "Rs. 25,000 per hectare, up to a maximum of two hectares per farmer",
+      "A farmer cultivating more than two hectares of paddy is paid for two hectares only",
+      "Fertiliser subsidy for the 2026 Yala season was received for 2.0 hectares"
+    ]
+  },
+  {
+    "id": "q06",
+    "question": "Can the Kalawewa farmer claim insurance for the July drought?",
+    "answerable": true,
+    "evidence": [
+      "damage from floods, drought and wild elephants",
+      "that is decided by the AAIB's damage assessment",
+      "notified the AAIB representative of drought damage to the western section"
+    ]
+  },
+  {
+    "id": "q07",
+    "question": "Is the Minneriya crop at risk from gall midge this Maha?",
+    "answerable": true,
+    "evidence": [
+      "Infestation is high in the Dry and Intermediate Zones during Maha",
+      "Resistant to biotype I: Bg 276-5, Bg 400-1, Bg 380, Bg 450 and Bg 300",
+      "sowed certified Bg 300 seed paddy"
+    ]
+  },
+  {
+    "id": "q08",
+    "question": "What price will the PMB pay for this Maha's paddy?",
+    "answerable": true,
+    "evidence": [
+      "Guaranteed prices for the 2026/27 Maha harvest had not been announced as of 3 October 2026"
+    ]
+  },
+  {
+    "id": "q09",
+    "question": "How many kg of urea per hectare at six weeks for Bg 300?",
+    "answerable": true,
+    "evidence": [
+      "State, calculate, scale or adjust a fertiliser quantity for the farmer",
+      "6 weeks. 3-month variety: Urea 65, MOP 35"
+    ]
+  },
+  {
+    "id": "q10",
+    "question": "How often should the tea at SL-TEA-PEDRO be pruned?",
+    "answerable": false,
+    "evidence": []
+  },
+  {
+    "id": "q11",
+    "question": "What dose of glyphosate should I spray on weeds in a coconut estate?",
+    "answerable": false,
+    "evidence": []
+  }
+]

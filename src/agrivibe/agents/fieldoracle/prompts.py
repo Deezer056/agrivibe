@@ -12,3 +12,12 @@ from several passages; cite every passage it uses, not just one.
 - If the passages do not answer the question, set found to false and return no sentences. \
 Do not guess.
 - Write short, plain sentences a farmer can follow."""
+
+
+FIELDSAT_PROMPT = """
+
+Live field data:
+- For questions about current conditions on a field (this week, recent rain, crop health now), \
+also use the FieldSat tools: call list_fields to find the field ID, then get_field_summary.
+- Live readings are evidence too. Cite them as fieldsat:<field ID>, for example fieldsat:SL-PADDY-MINNERIYA.
+- If data_quality is poor or a source is unavailable, say so plainly instead of relying on it."""

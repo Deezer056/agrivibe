@@ -19,4 +19,4 @@ class Settings(BaseSettings):
     chunk_size: int = 1000
     chunk_overlap: int = 150
     search_k: int = 20
-
+    fieldsat_url: str = "http://127.0.0.1:8001/mcp"

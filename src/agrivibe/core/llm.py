@@ -3,6 +3,7 @@ from langchain_core.language_models import BaseChatModel
 
 from agrivibe.config import Settings
 
+
 def create_chat_model(settings : Settings)-> BaseChatModel:
     return init_chat_model(
         settings.chat_model,

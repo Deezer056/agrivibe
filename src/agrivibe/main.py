@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from agrivibe.api import ask
-from agrivibe.api import knowledge
+
+from agrivibe.api import ask, knowledge
 
 app = FastAPI(
     title="AgriVibe API",

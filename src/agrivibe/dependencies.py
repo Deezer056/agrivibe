@@ -2,12 +2,13 @@ from functools import lru_cache
 
 from langchain_pinecone import PineconeVectorStore
 
-from agrivibe.config import Settings
-from agrivibe.db.vectorstore import create_vector_store
-from agrivibe.service.knowledge import KnowledgeService
 from agrivibe.agents.fieldoracle.agent import build_fieldoracle_agent
+from agrivibe.config import Settings
 from agrivibe.core.llm import create_chat_model
+from agrivibe.db.vectorstore import create_vector_store
 from agrivibe.service.answering import AnswerService
+from agrivibe.service.knowledge import KnowledgeService
+
 
 @lru_cache
 def get_settings() -> Settings:

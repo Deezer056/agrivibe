@@ -1,14 +1,9 @@
-"""Score retrieval on eval/bench.json: Recall@5, Precision@5 and MRR.
-
-Run from the agrivibe folder:  uv run python eval/run_bench.py
-It calls the same KnowledgeService that /knowledge/search uses, so the app doesn't need to be running.
-"""
-
 import json
 import re
+import sys
 from pathlib import Path
 
-from agrivibe.dependencies import get_knowledge_service
+from retrieval import Retrievers
 
 K = 5
 BENCH = Path(__file__).parent / "bench.json"
@@ -36,18 +31,19 @@ def score_question(texts: list[str], evidence: list[str]) -> dict:
 
 
 def main() -> None:
-    service = get_knowledge_service()
+    mode = sys.argv[1] if len(sys.argv) > 1 else "vector"
+    retrieve = getattr(Retrievers(), mode)
     bench = json.loads(BENCH.read_text(encoding="utf-8"))
     rows = []
 
-    print(f"{'id':<5}{'R@5':>6}{'P@5':>6}{'MRR':>6}  top sources")
+    print(f"Mode: {mode}\n{'id':<5}{'R@5':>6}{'P@5':>6}{'MRR':>6}  top sources")
     for q in bench:
-        hits = service.search(q["question"], K).hits
-        sources = ", ".join(h.source[:6] for h in hits)
+        docs = retrieve(q["question"], K)
+        sources = ", ".join(d.metadata["source"][:6] for d in docs)
         if not q["answerable"]:
-            print(f"{q['id']:<5}{'-':>6}{'-':>6}{'-':>6}  {sources}  (unanswerable, top score {hits[0].score:.3f})")
+            print(f"{q['id']:<5}{'-':>6}{'-':>6}{'-':>6}  {sources}  (unanswerable)")
             continue
-        s = score_question([h.text for h in hits], q["evidence"])
+        s = score_question([d.page_content for d in docs], q["evidence"])
         rows.append(s)
         print(f"{q['id']:<5}{s['recall']:>6.2f}{s['precision']:>6.2f}{s['mrr']:>6.2f}  {sources}")
 

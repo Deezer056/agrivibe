@@ -1,3 +1,12 @@
+"""Score retrieval on eval/bench.json: Recall@5, Precision@5 and MRR.
+
+Run from the agrivibe folder. The eval group adds BM25 and the local cross-encoder:
+    uv run --group eval python eval/run_bench.py            # baseline: vector search only
+    uv run --group eval python eval/run_bench.py hybrid     # vector + BM25, fused with RRF
+    uv run --group eval python eval/run_bench.py rerank     # hybrid, then a local cross-encoder re-orders the top 20
+The app doesn't need to be running.
+"""
+
 import json
 import re
 import sys

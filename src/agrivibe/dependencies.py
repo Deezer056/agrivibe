@@ -3,7 +3,8 @@ from functools import lru_cache
 from fastapi import Request
 from langchain_pinecone import PineconeVectorStore
 from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.store.memory import InMemoryStore
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.store.postgres import AsyncPostgresStore
 
 from agrivibe.agents.advisory import build_advisory_agent
 from agrivibe.agents.farm_context import build_farm_context_agent
@@ -57,7 +58,9 @@ def get_answer_service() -> AnswerService:
     return AnswerService(agent)
 
 
-def build_chat_service(settings: Settings, fieldsat: FieldSat) -> ChatService:
+def build_chat_service(
+    settings: Settings, fieldsat: FieldSat, checkpointer: AsyncPostgresSaver, store: AsyncPostgresStore
+) -> ChatService:
     """Builds the specialists and the orchestrator that calls them.
 
     Called once, from the lifespan in main.py: the FieldSat tools are only known after
@@ -66,6 +69,8 @@ def build_chat_service(settings: Settings, fieldsat: FieldSat) -> ChatService:
     Args:
         settings: Application settings.
         fieldsat: The tools and instructions loaded from the FieldSat MCP server.
+        checkpointer: Saves each thread's state in Postgres.
+        store: Long-term memory in Postgres: each farmer's saved field.
 
     Returns:
         The service behind POST /chat.
@@ -77,8 +82,7 @@ def build_chat_service(settings: Settings, fieldsat: FieldSat) -> ChatService:
     # It searches the same way /ask does: vector search, then the cross-encoder.
     knowledge_agent = build_fieldoracle_agent(model, get_vector_store(), k=settings.search_k, reranker=get_reranker())
     advisory_agent = build_advisory_agent(model)
-    # Both live in process memory, so they reset when the app restarts.
-    # In production they would be database-backed (Postgres, Redis).
+    # Both live in Postgres, so threads and each farmer's field survive a restart.
     orchestrator = build_orchestrator(
         model,
         fieldsat,
@@ -86,8 +90,8 @@ def build_chat_service(settings: Settings, fieldsat: FieldSat) -> ChatService:
         farm_context_agent,
         knowledge_agent,
         advisory_agent,
-        checkpointer=InMemorySaver(),
-        store=InMemoryStore(),
+        checkpointer=checkpointer,
+        store=store,
     )
     return ChatService(orchestrator)
 

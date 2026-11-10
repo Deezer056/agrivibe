@@ -56,14 +56,14 @@ class AgriVibeState(AgentState):
 
 
 @dynamic_prompt
-def remember_the_farm(request: ModelRequest[FarmerContext]) -> str:
+async def remember_the_farm(request: ModelRequest[FarmerContext]) -> str:
     """Adds the farmer's saved field, from the store, to the orchestrator's system prompt.
 
     It runs before every model call, so a new conversation already knows the farmer's field.
     """
     prompt = request.system_prompt or ""
     store = request.runtime.store
-    saved = store.get(("farmers", request.runtime.context.user_id), "farm") if store else None
+    saved = await store.aget(("farmers", request.runtime.context.user_id), "farm") if store else None
     if saved is None:
         return prompt
     farm = saved.value

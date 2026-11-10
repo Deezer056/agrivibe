@@ -58,7 +58,7 @@ def save_finding(name: str, finding: Finding, runtime: ToolRuntime) -> Command:
     })
 
 @tool(parse_docstring=True)
-def save_requirements(
+async def save_requirements(
     field_id: str, crop: str, problem: str, timeframe: str, runtime: ToolRuntime[FarmerContext, AgriVibeState]
 ) -> Command:
     """Save what the farmer needs. Call it once you know the field, before you ask a specialist about it.
@@ -72,7 +72,7 @@ def save_requirements(
     requirements = Requirements(field_id=field_id, crop=crop, problem=problem, timeframe=timeframe)
     # Long-term memory: the farmer's field is still known in their next conversation.
     if runtime.store is not None:
-        runtime.store.put(("farmers", runtime.context.user_id), "farm", {"field_id": field_id, "crop": crop})
+        await runtime.store.aput(("farmers", runtime.context.user_id), "farm", {"field_id": field_id, "crop": crop})
     return Command(update={
         "requirements": requirements,
         "messages": [ToolMessage(f"Saved: {requirements}", tool_call_id=runtime.tool_call_id)],

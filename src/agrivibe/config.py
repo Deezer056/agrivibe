@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     openai_api_key: SecretStr
     pinecone_api_key: SecretStr
+    database_url:SecretStr
 
     chat_model: str = "openai:gpt-5.6-terra"
     embedding_model: str = "text-embedding-3-small"

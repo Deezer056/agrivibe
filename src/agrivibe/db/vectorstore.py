@@ -7,6 +7,7 @@ from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
 
 from agrivibe.config import Settings
+from agrivibe.core.reranker import Reranker, rerank
 
 Category = Literal["cultivation_guide", "policy", "farm_record"]
 
@@ -34,7 +35,14 @@ def create_vector_store(settings: Settings) -> PineconeVectorStore:
 
 
 def search_chunks(
-    vector_store: VectorStore, query: str, k: int, category: Category | None = None
+    vector_store: VectorStore,
+    query: str,
+    k: int,
+    category: Category | None = None,
+    reranker: Reranker | None = None,
 ) -> list[tuple[Document, float]]:
+    """With a reranker: fetch a longer shortlist, re-score it, keep the best k. Without one: a plain search for k."""
     search_filter = {"category": category} if category else None
-    return vector_store.similarity_search_with_score(query=query, k=k, filter=search_filter)
+    fetch_k = max(reranker.candidates, k) if reranker else k
+    hits = vector_store.similarity_search_with_score(query=query, k=fetch_k, filter=search_filter)
+    return rerank(reranker, query, hits, k)

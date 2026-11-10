@@ -17,6 +17,7 @@ class Source(BaseModel):
     page: int
     category: Category
     text: str
+    rerank_score: float | None = None  # None when reranking is off
 
 
 class SearchHit(Source):
@@ -27,6 +28,7 @@ class SearchRequest(BaseModel):
     query: str = Field(min_length=1)
     category: Category | None = None
     k: int = Field(default=4, ge=1, le=20)
+    rerank: bool = True  # False keeps the vector order, handy for comparing
 
 
 class SearchResponse(BaseModel):

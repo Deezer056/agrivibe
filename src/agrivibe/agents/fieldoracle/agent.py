@@ -1,18 +1,28 @@
 from langchain.agents import create_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.vectorstores import VectorStore
+from langgraph.types import Checkpointer
 
 from agrivibe.agents.fieldoracle.prompts import FIELDSAT_PROMPT, SYSTEM_PROMPT
 from agrivibe.agents.fieldoracle.schemas import CitedAnswer
 from agrivibe.agents.fieldoracle.tools import make_search_tool
+from agrivibe.core.reranker import Reranker
 
 
-def build_fieldoracle_agent(model: BaseChatModel, vector_store: VectorStore, k: int = 20,extra_tools=()):
+def build_fieldoracle_agent(
+    model: BaseChatModel,
+    vector_store: VectorStore,
+    k: int = 20,
+    extra_tools=(),
+    checkpointer: Checkpointer = None,
+    reranker: Reranker | None = None,
+):
     return create_agent(
         model=model,
-        tools=[make_search_tool(vector_store=vector_store, k=k),*extra_tools],
+        tools=[make_search_tool(vector_store=vector_store, k=k, reranker=reranker), *extra_tools],
         system_prompt=SYSTEM_PROMPT + FIELDSAT_PROMPT if extra_tools else SYSTEM_PROMPT,
         response_format=CitedAnswer,
+        checkpointer=checkpointer,
         name="FieldOracle",
     )
 

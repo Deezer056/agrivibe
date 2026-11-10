@@ -2,6 +2,7 @@ from langchain.tools import tool
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 
+from agrivibe.core.reranker import Reranker
 from agrivibe.db.vectorstore import Category, search_chunks
 
 
@@ -16,7 +17,7 @@ def format_passages(docs: list[Document]) -> str:
     return "\n\n".join(blocks)
 
 
-def make_search_tool(vector_store: VectorStore, k: int):
+def make_search_tool(vector_store: VectorStore, k: int, reranker: Reranker | None = None):
     @tool(response_format="content_and_artifact")
     def search_knowledge(query: str, category: Category | None = None):
         """Search the FieldOracle knowledge base for passages about a question.
@@ -27,7 +28,7 @@ def make_search_tool(vector_store: VectorStore, k: int):
                 crop. policy covers government circulars, subsidies and mandates. farm_record covers
                 what happened on a specific registered field. Leave empty to search everything.
         """
-        docs = [doc for doc, _ in search_chunks(vector_store, query, k, category)]
+        docs = [doc for doc, _ in search_chunks(vector_store, query, k, category, reranker)]
         return format_passages(docs), docs  # (text the model reads, Documents your code keeps)
 
     return search_knowledge

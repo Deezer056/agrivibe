@@ -8,6 +8,7 @@ from langchain_core.vectorstores import VectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 
+from agrivibe.core.reranker import Reranker
 from agrivibe.db.vectorstore import Category, search_chunks
 from agrivibe.models.knowledge import IndexResponse, SearchHit, SearchResponse
 
@@ -30,8 +31,11 @@ def read_pdf(data: bytes, metadata: dict) -> list[Document]:
 
 
 class KnowledgeService:
-    def __init__(self, vector_store: VectorStore, chunk_size: int, chunk_overlap: int):
+    def __init__(
+        self, vector_store: VectorStore, chunk_size: int, chunk_overlap: int, reranker: Reranker | None = None
+    ):
         self.vector_store = vector_store
+        self.reranker = reranker
         self.splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
     def index_pdf(self, filename: str, data: bytes, category: Category) -> IndexResponse:
@@ -50,7 +54,8 @@ class KnowledgeService:
             doc_id=doc_id, filename=filename, category=category, pages=len(pages), chunks=len(chunks)
         )
 
-    def search(self, query: str, k: int, category: Category | None = None) -> SearchResponse:
+    def search(self, query: str, k: int, category: Category | None = None, rerank: bool = True) -> SearchResponse:
+        reranker = self.reranker if rerank else None
         hits = [
             SearchHit(
                 id=doc.id,
@@ -59,7 +64,8 @@ class KnowledgeService:
                 category=doc.metadata["category"],
                 text=doc.page_content,
                 score=score,
+                rerank_score=doc.metadata.get("rerank_score"),
             )
-            for doc, score in search_chunks(self.vector_store, query, k, category)
+            for doc, score in search_chunks(self.vector_store, query, k, category, reranker)
         ]
         return SearchResponse(hits=hits)

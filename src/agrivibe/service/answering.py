@@ -1,14 +1,29 @@
+from uuid import uuid4
+
 from langchain_core.documents import Document
-from langchain_core.messages import AIMessage, BaseMessage, ToolMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 
 from agrivibe.agents.fieldoracle.schemas import CitedAnswer
 from agrivibe.models.ask import AskResponse
 from agrivibe.models.knowledge import Source
 
 
+def current_turn(messages: list[BaseMessage]) -> list[BaseMessage]:
+    """Drops the earlier turns of a thread: the messages from the last user message onwards."""
+    starts = [i for i, message in enumerate(messages) if isinstance(message, HumanMessage)]
+    return messages[starts[-1]:] if starts else messages
+
+
 def to_source(doc: Document) -> Source:
     meta = doc.metadata
-    return Source(id=doc.id, source=meta["source"], page=meta["page"], category=meta["category"], text=doc.page_content)
+    return Source(
+        id=doc.id,
+        source=meta["source"],
+        page=meta["page"],
+        category=meta["category"],
+        text=doc.page_content,
+        rerank_score=meta.get("rerank_score"),
+    )
 
 
 def retrieved_chunks(messages: list[BaseMessage]) -> dict[str, Document]:
@@ -36,16 +51,21 @@ class AnswerService:
     def __init__(self, rag_agent):
         self.rag_agent = rag_agent
 
-    def ask(self, question: str) -> AskResponse:
-        result = self.rag_agent.invoke({"messages": [{"role": "user", "content": question}]})
+    def ask(self, question: str, thread_id: str | None = None) -> AskResponse:
+        thread_id = thread_id or str(uuid4())
+        result = self.rag_agent.invoke(
+            {"messages": [{"role": "user", "content": question}]},
+            {"configurable": {"thread_id": thread_id}},
+        )
         answer: CitedAnswer = result["structured_response"]
-        messages = result["messages"]
+        messages = current_turn(result["messages"])
 
         cited = {chunk_id for s in answer.sentences for chunk_id in s.citations}
         chunks = retrieved_chunks(messages)
 
         return AskResponse(
             question=question,
+            thread_id=thread_id,
             found=answer.found,
             answer=" ".join(f"{s.sentence} [{', '.join(s.citations)}]" for s in answer.sentences),
             sentences=answer.sentences,

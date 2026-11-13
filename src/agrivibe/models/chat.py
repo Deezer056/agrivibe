@@ -1,5 +1,6 @@
-"""Bodies for POST /chat."""
+"""Bodies for POST /chat. A Turn is also what GET /threads/{thread_id} returns for each past message."""
 
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -8,19 +9,16 @@ from agrivibe.models.knowledge import Source
 
 
 class ChatRequest(BaseModel):
-    """A message from the farmer to AgriVibe."""
+    """A message from the farmer to AgriVibe.
+
+    There is no user_id: the server decides who is asking (see current_farmer in dependencies.py).
+    """
 
     message: str = Field(min_length=1, max_length=2000)
-    user_id: str = Field(
-        min_length=1,
-        max_length=100,
-        description="Who is asking. A real app takes this from the login; here the client sends it.",
-        examples=["farmer-001"],
-    )
     thread_id: str | None = Field(
         default=None,
         max_length=200,
-        description="The conversation to continue. Leave empty to start a new one; the response returns its id.",
+        description="One of your conversations to continue. Leave empty to start a new one; the response returns its id.",
     )
 
 
@@ -40,12 +38,10 @@ class Finding(BaseModel):
     )
 
 
-class ChatResponse(BaseModel):
-    """AgriVibe's reply, the tools the orchestrator called, and what central memory holds."""
+class Turn(BaseModel):
+    """One message from the farmer and everything AgriVibe did to answer it."""
 
     message: str
-    user_id: str
-    thread_id: str = Field(description="The conversation this reply belongs to. Send it back to continue.")
     answer: str
     tools_called: list[str] = Field(
         description="Every tool the orchestrator called for this message, in order. The specialists are the ask_* tools."
@@ -56,3 +52,11 @@ class ChatResponse(BaseModel):
     findings: dict[str, Finding] = Field(
         description="What each specialist reported for this message, by name: weather, farm_context, knowledge."
     )
+    started_at: datetime
+    seconds: float = Field(description="How long the turn took, end to end.")
+
+
+class ChatResponse(Turn):
+    """AgriVibe's reply to one message, with the evidence behind it."""
+
+    thread_id: str = Field(description="The conversation this reply belongs to. Send it back to continue.")

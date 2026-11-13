@@ -34,6 +34,8 @@ class Finding(TypedDict):
 
     summary: str
     data: dict[str, Any]  # FieldSat's reply, or FieldOracle's found and citations; empty if it failed
+    # FieldOracle only: the cited passages in full, for the farmer to check. No model reads them.
+    sources: NotRequired[list[dict[str, Any]]]
 
 
 def merge_findings(current: dict[str, Finding], update: dict[str, Finding]) -> dict[str, Finding]:

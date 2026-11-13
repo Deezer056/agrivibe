@@ -4,6 +4,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from agrivibe.models.knowledge import Source
+
 
 class ChatRequest(BaseModel):
     """A message from the farmer to AgriVibe."""
@@ -31,6 +33,10 @@ class Finding(BaseModel):
             "weather and farm_context: FieldSat's reply as the server sent it, such as rainfall_last_7_days_mm "
             "or ndvi_change_percentage. knowledge: found and citations. Empty if the specialist or its tool failed."
         )
+    )
+    sources: list[Source] = Field(
+        default_factory=list,
+        description="knowledge only: every passage the answer cites, with its file, page, text and rerank score.",
     )
 
 

@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from agrivibe.api import ask, chat, knowledge
-from agrivibe.core.database import open_memory
+from agrivibe.core.database import open_database
 from agrivibe.core.mcp import load_fieldsat
 from agrivibe.dependencies import build_chat_service, get_settings
 
@@ -14,9 +14,9 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     fieldsat = await load_fieldsat(settings.fieldsat_url)
     print("FieldSat tools:", ", ".join(tool.name for tool in fieldsat.tools))
-    async with open_memory(settings.database_url.get_secret_value()) as (checkpointer, store):
+    async with open_database(settings.database_url.get_secret_value()) as db:
         print("Postgres: connected; threads and farmer memory persist")
-        app.state.chat_service = build_chat_service(settings, fieldsat, checkpointer, store)
+        app.state.chat_service = build_chat_service(settings, fieldsat, db.checkpointer, db.store)
         yield
 
 app = FastAPI(

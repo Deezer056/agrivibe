@@ -9,7 +9,12 @@ class Settings(BaseSettings):
 
     openai_api_key: SecretStr
     pinecone_api_key: SecretStr
-    database_url:SecretStr
+    database_url: SecretStr
+
+    # The farmer this app acts for. Identity is decided here, on the server, never by the request:
+    # see current_farmer in dependencies.py, the one place a real auth service would plug in.
+    farmer_id: str = "frm_7f3a9c2e"
+    farmer_name: str = "Nimal Perera"
 
     chat_model: str = "openai:gpt-5.6-terra"
     embedding_model: str = "text-embedding-3-small"

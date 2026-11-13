@@ -11,6 +11,7 @@ from langchain.messages import ToolMessage
 from langchain.tools import BaseTool, ToolRuntime, tool
 from langgraph.types import Command
 
+from agrivibe.agents.fieldoracle.tools import cited_sources
 from agrivibe.agents.fieldsat import FieldContext
 from agrivibe.agents.orchestrator.memory import (
     AgriVibeState,
@@ -148,6 +149,8 @@ def make_specialist_tools(weather_agent, farm_context_agent, knowledge_agent, ad
             finding = Finding(
                 summary=text if answer.found and text else "The knowledge base does not cover this.",
                 data={"found": answer.found, "citations": citations},
+                # as_text never includes sources, so the passages reach the farmer without filling a prompt.
+                sources=cited_sources(result["messages"], citations),
             )
         except Exception as error:
             logger.exception("%s failed", knowledge_agent.name)

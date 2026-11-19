@@ -31,10 +31,23 @@ class Database(NamedTuple):
     store: AsyncPostgresStore
 
 
+UNREADABLE = "an unreadable DATABASE_URL (check it has no quotes or spaces around it)"
+
+
 def where(url: str) -> str:
-    """The host and database of a connection string, without the password, for error messages."""
-    parts = urlsplit(url)
-    return f"{parts.hostname}{parts.path}"
+    """The host and database of a connection string, for error messages. Never the password.
+
+    A string that doesn't parse as postgresql://user:password@host/db (for example one still wrapped
+    in quotes, which docker --env-file keeps) gives a fixed message instead of the string itself.
+    """
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname
+    except ValueError:
+        return UNREADABLE
+    if parts.scheme not in ("postgresql", "postgres") or not host:
+        return UNREADABLE
+    return f"{host}{parts.path}"
 
 
 @asynccontextmanager
@@ -49,8 +62,11 @@ async def open_database(url: str) -> AsyncIterator[Database]:
         The connection pool for our tables, and LangGraph's checkpointer and store on the same pool.
 
     Raises:
-        RuntimeError: If the database cannot be reached.
+        RuntimeError: If the URL is unreadable or the database cannot be reached.
     """
+    # Checked before connecting: psycopg's own retry warnings would print an unreadable URL in full.
+    if where(url) == UNREADABLE:
+        raise RuntimeError(f"Could not connect to Postgres: {UNREADABLE}.")
     pool = AsyncConnectionPool(
         url,
         min_size=1,

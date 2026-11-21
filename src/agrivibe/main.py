@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from agrivibe.api import chat, farmer, knowledge, threads
+from agrivibe.api import chat, farmer, feedback, knowledge, threads
 from agrivibe.core.database import open_database
 from agrivibe.core.mcp import load_fieldsat
 from agrivibe.dependencies import build_chat_service, get_observability, get_settings
@@ -48,6 +48,7 @@ app.include_router(knowledge.router)
 app.include_router(chat.router)
 app.include_router(threads.router)
 app.include_router(farmer.router)
+app.include_router(feedback.router)
 
 
 @app.get("/health", tags=["system"])

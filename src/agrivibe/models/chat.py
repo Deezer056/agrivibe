@@ -63,6 +63,12 @@ class ChatResponse(Turn):
     trace_id: str | None = Field(
         default=None, description="The Langfuse trace of this turn. Send it to POST /feedback. None without tracing."
     )
+    guardrails: list[str] = Field(
+        default_factory=list,
+        description="Guardrails that fired on this turn, and tool_error when a tool failed.",
+    )
+
+
 class FeedbackRequest(BaseModel):
     """A farmer's 👍 or 👎 on one reply."""
 

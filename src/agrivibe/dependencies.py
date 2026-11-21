@@ -11,6 +11,12 @@ from agrivibe.agents.fieldoracle.agent import build_fieldoracle_agent
 from agrivibe.agents.orchestrator import build_orchestrator
 from agrivibe.agents.weather import build_weather_agent
 from agrivibe.config import Settings
+from agrivibe.core.guardrails import (
+    advisory_guardrails,
+    openai_moderation,
+    orchestrator_guardrails,
+    specialist_guardrails,
+)
 from agrivibe.core.llm import create_chat_model
 from agrivibe.core.mcp import FieldSat
 from agrivibe.core.reranker import Reranker
@@ -84,12 +90,14 @@ def build_chat_service(
         The service behind POST /chat.
     """
     model = create_chat_model(settings)
-    weather_agent = build_weather_agent(model, fieldsat)
-    farm_context_agent = build_farm_context_agent(model, fieldsat)
+    # The guardrails each agent needs (core/guardrails.py). GUARDRAILS=false leaves only the error counter.
+    specialist_guards = specialist_guardrails(settings)
+    weather_agent = build_weather_agent(model, fieldsat, specialist_guards)
+    farm_context_agent = build_farm_context_agent(model, fieldsat, specialist_guards)
     # A second FieldOracle, without a checkpointer: as a specialist it starts fresh on every call.
     # It searches the same way POST /search does: vector search, then the cross-encoder.
     knowledge_agent = build_fieldoracle_agent(model, get_vector_store(), k=settings.search_k, reranker=get_reranker())
-    advisory_agent = build_advisory_agent(model)
+    advisory_agent = build_advisory_agent(model, advisory_guardrails(settings))
     # Both live in Postgres, so threads and each farmer's field survive a restart.
     orchestrator = build_orchestrator(
         model,
@@ -100,8 +108,15 @@ def build_chat_service(
         advisory_agent,
         checkpointer=checkpointer,
         store=store,
+        guardrails=orchestrator_guardrails(
+            settings,
+            openai_moderation(settings.openai_api_key.get_secret_value(), settings.moderation_model)
+            if settings.moderation
+            else None,
+        ),
     )
-    return ChatService(orchestrator, threads, observability=get_observability())
+    tags = [f"guardrails:{'on' if settings.guardrails else 'off'}"]
+    return ChatService(orchestrator, threads, observability=get_observability(), tags=tags)
 
 
 def get_chat_service(request: Request) -> ChatService:

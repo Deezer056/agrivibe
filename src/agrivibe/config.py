@@ -42,4 +42,15 @@ class Settings(BaseSettings):
     langfuse_environment: str = "development"
 
     fieldsat_url: str = "http://127.0.0.1:8001/mcp"
-    
+
+    # Guardrails (core/guardrails.py). GUARDRAILS=false switches them all off, for a before/after demo.
+    guardrails: bool = True
+    # Input moderation calls OpenAI's Moderations endpoint. MODERATION=false skips it, for example
+    # when the API key may not call it (HTTP 403).
+    moderation: bool = True
+    moderation_model: str = "omni-moderation-latest"
+    # Output check: a fertiliser dose above this, per application, is withheld. A demo value, not agronomy advice.
+    max_dose_kg_per_ha: int = 150
+    # Limits per chat turn, so a confused orchestrator cannot loop and burn tokens.
+    max_model_calls: int = 12
+    max_tool_calls: int = 10

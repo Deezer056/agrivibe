@@ -7,6 +7,7 @@ from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 from agrivibe.agents.orchestrator.memory import FarmerContext
+from agrivibe.core.guardrails import start_recording
 from agrivibe.core.tracing import Observability, run_config
 from agrivibe.models.chat import ChatResponse, Turn
 from agrivibe.service.threads import ThreadService
@@ -90,6 +91,7 @@ class ChatService:
             else nullcontext()
         )
         with traced_turn as traced:
+            events = start_recording()  # guardrails and tool errors append here during the run
             started_at, started = datetime.now(UTC), time.monotonic()
             result = await self.orchestrator.ainvoke(
                 # The empty findings clear the last question's evidence (see merge_findings).
@@ -116,6 +118,13 @@ class ChatService:
                         "seconds": turn.seconds,
                     },
                 )
+            if traced and self.observability is not None:
+                self.observability.record_events(traced.trace_id, events)
         await self.threads.record_turn(farmer_id, thread_id, turn)
         trace_id = traced.trace_id if traced else None
-        return ChatResponse(**turn.model_dump(), thread_id=thread_id, trace_id=trace_id)
+        return ChatResponse(
+            **turn.model_dump(),
+            thread_id=thread_id,
+            trace_id=trace_id,
+            guardrails=sorted({name for name, _ in events}),
+        )

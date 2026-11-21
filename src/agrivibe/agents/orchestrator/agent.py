@@ -22,6 +22,7 @@ def build_orchestrator(
     advisory_agent,
     checkpointer: Checkpointer = None,
     store: BaseStore | None = None,
+    guardrails=(),
 ):
     """Builds the orchestrator: the one agent the farmer talks to.
 
@@ -39,6 +40,7 @@ def build_orchestrator(
         checkpointer: Saves each thread's state (messages, requirements, findings), so the
             farmer can ask follow-up questions.
         store: Long-term memory shared by every thread. Holds each farmer's saved field.
+        guardrails: Middleware that runs before the rest: moderation, PII redaction, call limits.
 
     Returns:
         A compiled agent graph. Run it with `ainvoke`, a `thread_id` and a `FarmerContext`.
@@ -52,7 +54,7 @@ def build_orchestrator(
         model,
         tools=tools,
         system_prompt=fieldsat.prompt(SYSTEM_PROMPT),
-        middleware=[remember_the_farm],
+        middleware=[*guardrails, remember_the_farm],
         state_schema=AgriVibeState,
         context_schema=FarmerContext,
         checkpointer=checkpointer,

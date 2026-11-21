@@ -54,3 +54,6 @@ class Settings(BaseSettings):
     # Limits per chat turn, so a confused orchestrator cannot loop and burn tokens.
     max_model_calls: int = 12
     max_tool_calls: int = 10
+
+    # The LLM-as-judge used by evals/. Pin it; change it on purpose.
+    judge_model: str = "openai:gpt-5.6-luna"

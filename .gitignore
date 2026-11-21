@@ -19,3 +19,6 @@ graphify-out/
 node_modules/
 CLAUDE.md
 .cursor/
+
+# Eval runs: results/latest.json is regenerated on every run. baseline.json (one folder up) is committed.
+evals/results/*.json

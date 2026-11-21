@@ -14,6 +14,7 @@ from agrivibe.config import Settings
 from agrivibe.core.llm import create_chat_model
 from agrivibe.core.mcp import FieldSat
 from agrivibe.core.reranker import Reranker
+from agrivibe.core.tracing import Observability, create_observability
 from agrivibe.db.vectorstore import create_vector_store
 from agrivibe.models.farmer import Farmer
 from agrivibe.service.chatting import ChatService
@@ -33,6 +34,11 @@ def get_vector_store() -> PineconeVectorStore:
 def get_reranker() -> Reranker | None:
     settings = get_settings()
     return None if settings.reranker == "none" else Reranker(settings)
+
+@lru_cache
+def get_observability() -> Observability | None:
+    """Returns the shared Langfuse helper for per-turn traces, or None without Langfuse keys."""
+    return create_observability(get_settings())
 
 @lru_cache
 def get_knowledge_service() -> KnowledgeService:
@@ -95,7 +101,7 @@ def build_chat_service(
         checkpointer=checkpointer,
         store=store,
     )
-    return ChatService(orchestrator, threads)
+    return ChatService(orchestrator, threads, observability=get_observability())
 
 
 def get_chat_service(request: Request) -> ChatService:

@@ -1,0 +1,21 @@
+# Secrets and local state never enter the build context.
+.env
+.env.*
+.neon
+.venv
+.git
+.idea
+.ruff_cache
+__pycache__
+*.pyc
+tests
+samples
+data
+eval
+reports
+scripts
+graphify-out
+node_modules
+neon.ts
+package.json
+package-lock.json

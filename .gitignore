@@ -17,3 +17,5 @@ data/
 graphify-out/
 .neon
 node_modules/
+CLAUDE.md
+.cursor/

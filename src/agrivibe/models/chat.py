@@ -63,3 +63,9 @@ class ChatResponse(Turn):
     trace_id: str | None = Field(
         default=None, description="The Langfuse trace of this turn. Send it to POST /feedback. None without tracing."
     )
+class FeedbackRequest(BaseModel):
+    """A farmer's 👍 or 👎 on one reply."""
+
+    trace_id: str = Field(min_length=1, max_length=100, description="The trace_id from the reply's ChatResponse.")
+    positive: bool = Field(description="True for 👍, False for 👎.")
+    comment: str | None = Field(default=None, max_length=1000)

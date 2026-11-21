@@ -102,6 +102,16 @@ class Observability:
         ):
             yield TracedTurn(trace_id, CallbackHandler(public_key=self.public_key), root)
 
+    def feedback(self, trace_id: str, positive: bool, comment: str | None = None) -> None:
+        """Stores a farmer's 👍/👎 on a trace as the `user_feedback` score."""
+        self.client.create_score(
+            trace_id=trace_id,
+            name="user_feedback",
+            value=1.0 if positive else 0.0,
+            data_type="BOOLEAN",
+            comment=comment,
+        )
+
     def trace_url(self, trace_id: str) -> str | None:
         """The trace's page in the Langfuse UI."""
         return self.client.get_trace_url(trace_id=trace_id)

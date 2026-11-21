@@ -34,4 +34,12 @@ class Settings(BaseSettings):
     rerank_model: str = "bge-reranker-v2-m3"
     rerank_candidates: int = 20
 
+    # Langfuse tracing. Optional: with no keys the app runs without it.
+    langfuse_public_key: str | None = None
+    langfuse_secret_key: SecretStr | None = None
+    langfuse_base_url: str = "https://cloud.langfuse.com"  # EU; https://us.cloud.langfuse.com for US
+    # Separates traces in Langfuse: "development" on a laptop, "production" in the deployed stack.
+    langfuse_environment: str = "development"
+
     fieldsat_url: str = "http://127.0.0.1:8001/mcp"
+    

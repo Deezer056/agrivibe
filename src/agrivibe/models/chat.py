@@ -60,3 +60,6 @@ class ChatResponse(Turn):
     """AgriVibe's reply to one message, with the evidence behind it."""
 
     thread_id: str = Field(description="The conversation this reply belongs to. Send it back to continue.")
+    trace_id: str | None = Field(
+        default=None, description="The Langfuse trace of this turn. Send it to POST /feedback. None without tracing."
+    )

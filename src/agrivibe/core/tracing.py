@@ -6,6 +6,7 @@ and its trace best practices: https://langfuse.com/docs/observability/best-pract
 """
 
 import re
+from collections import Counter
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -17,11 +18,11 @@ from langfuse import Langfuse, LangfuseSpan, propagate_attributes
 from langfuse.langchain import CallbackHandler
 
 from agrivibe.config import Settings
+from agrivibe.core.guardrails import PHONE_PATTERN
 
 TRACE_NAME = "chat"
 
-# Sri Lankan phone numbers: +94 or 0, then 9 digits, with optional spaces or dashes.
-PHONE = re.compile(r"(?:\+94|\b0)(?:[\s-]?\d){9}\b")
+PHONE = re.compile(PHONE_PATTERN)  # the same rule as the PII guardrail (core/guardrails.py)
 PHONE_MASK = "<phone>"
 
 
@@ -111,6 +112,17 @@ class Observability:
             data_type="BOOLEAN",
             comment=comment,
         )
+
+    def record_events(self, trace_id: str, events: list[tuple[str, str]]) -> None:
+        """Turns the turn's guardrail events into scores: one categorical score per guardrail that fired,
+        and a numeric `tool_errors` count on every trace (zero included, so the rate can be computed)."""
+        counts = Counter(name for name, _ in events)
+        self.client.create_score(trace_id=trace_id, name="tool_errors", value=float(counts.pop("tool_error", 0)))
+        for name, detail in events:
+            if name in counts:
+                self.client.create_score(
+                    trace_id=trace_id, name="guardrail", value=name, data_type="CATEGORICAL", comment=detail
+                )
 
     def trace_url(self, trace_id: str) -> str | None:
         """The trace's page in the Langfuse UI."""

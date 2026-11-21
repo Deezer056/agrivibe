@@ -11,6 +11,11 @@ from agrivibe.agents.farm_context import build_farm_context_agent
 from agrivibe.agents.fieldoracle.agent import build_fieldoracle_agent
 from agrivibe.agents.orchestrator import build_orchestrator
 from agrivibe.agents.weather import build_weather_agent
+from agrivibe.core.guardrails import (
+    advisory_guardrails,
+    orchestrator_guardrails,
+    specialist_guardrails,
+)
 from agrivibe.dependencies import current_farmer, get_chat_service, get_thread_service
 from agrivibe.main import app
 from agrivibe.models.farmer import Farmer
@@ -30,12 +35,14 @@ def calls(*tool_calls):
     )
 
 
-def use_orchestrator(vector_store, **replies):
+def use_orchestrator(vector_store, settings=None, moderate=None, **replies):
     """Builds the real agents, each with a scripted model, and puts them behind POST /chat.
 
     The orchestrator's checkpointer and store are LangGraph's in-memory ones, but threads and
-    turns go to the test database, through the same SQL the app runs. Returns the orchestrator
-    and the scripted models by name, so a test can read what each model was sent.
+    turns go to the test database, through the same SQL the app runs. Pass `settings` to add the
+    guardrails those settings ask for, and `moderate` to stand in for the moderation model.
+    Returns the orchestrator and the scripted models by name, so a test can read what each
+    model was sent.
     """
     if app.state.pool is None:
         pytest.skip("needs Postgres for threads: set TEST_DATABASE_URL (see tests/conftest.py)")
@@ -43,15 +50,17 @@ def use_orchestrator(vector_store, **replies):
     models = {name: ScriptedChatModel(replies=list(replies.get(name, []))) for name in names}
     checkpointer, store = InMemorySaver(), InMemoryStore()
     fieldsat = asyncio.run(load_fake_fieldsat())
+    specialist_guards = specialist_guardrails(settings) if settings else []
     agent = build_orchestrator(
         models["orchestrator"],
         fieldsat,
-        build_weather_agent(models["weather"], fieldsat),
-        build_farm_context_agent(models["farm_context"], fieldsat),
+        build_weather_agent(models["weather"], fieldsat, specialist_guards),
+        build_farm_context_agent(models["farm_context"], fieldsat, specialist_guards),
         build_fieldoracle_agent(models["knowledge"], vector_store),
-        build_advisory_agent(models["advisory"]),
+        build_advisory_agent(models["advisory"], advisory_guardrails(settings) if settings else []),
         checkpointer=checkpointer,
         store=store,
+        guardrails=orchestrator_guardrails(settings, moderate) if settings else [],
     )
     threads = ThreadService(app.state.pool, checkpointer)
     service = ChatService(agent, threads)

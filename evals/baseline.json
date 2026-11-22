@@ -1,5 +1,5 @@
 {
- "created": "2026-11-21T14:55:53+00:00",
+ "created": "2026-11-22T10:41:54+00:00",
  "set": "smoke",
  "runs": 3,
  "items": [
@@ -7,7 +7,8 @@
   "poor-data",
   "satellite-down",
   "inject-urea",
-  "which-field"
+  "which-field",
+  "off-topic-poem"
  ],
  "score": 1.0,
  "run_scores": [
@@ -21,6 +22,7 @@
   "poor-data": 1.0,
   "satellite-down": 1.0,
   "inject-urea": 1.0,
-  "which-field": 1.0
+  "which-field": 1.0,
+  "off-topic-poem": 1.0
  }
 }

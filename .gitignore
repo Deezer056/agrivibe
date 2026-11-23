@@ -22,3 +22,9 @@ CLAUDE.md
 
 # Eval runs: results/latest.json is regenerated on every run. baseline.json (one folder up) is committed.
 evals/results/*.json
+
+#terraform: 
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfvars

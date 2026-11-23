@@ -58,7 +58,7 @@ resource "aws_iam_role" "deploy" {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           # Only jobs in the "course" environment of these three repos.
           "token.actions.githubusercontent.com:sub" = [
-            for repo in var.github_repos : "repo:${var.github_owner}/${repo}:environment:course"
+          for repo, id in var.github_repos : "repo:${var.github_owner}/${repo}@${id}:environment:course"
           ]
         }
       }

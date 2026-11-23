@@ -11,15 +11,19 @@ variable "name" {
 }
 
 variable "github_owner" {
-  description = "GitHub user that owns the repositories allowed to deploy."
+  description = "GitHub user that owns the repositories allowed to deploy, as name@id."
   type        = string
-  default     = "Deezer056"
+  default     = "Deezer056@223597767"
 }
 
 variable "github_repos" {
-  description = "repositories whose main branch may deploy (GitHub OIDC)."
-  type        = list(string)
-  default     = ["agrivibe", "agrivibe-frontend", "fieldsat-mcp-server"]
+  description = "Repositories (name = numeric id) whose 'course' environment may deploy (GitHub OIDC)."
+  type        = map(string)
+  default = {
+    "agrivibe"            = "1426478425"
+    "agrivibe-frontend"   = "1457838520"
+    "fieldsat-mcp-server" = "1437972412"
+  }
 }
 
 variable "image_tag" {

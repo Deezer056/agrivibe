@@ -15,7 +15,7 @@ AgriVibe is built so that doesn't happen. Facts come from real documents, number
 ## What it does
 
 - **Answers from documents, with citations.** Cultivation guides, subsidy circulars and field records are indexed in a vector store. Answers quote the passage they used (RAG).
-- **Knows the farmer's field.** It pulls Sentinel-2 crop-health (NDVI) and weather data through a separate MCP server I built: [fieldsat-mcp-server](https://github.com/Deezer056/fieldsat-mcp-server).
+- **Knows the farmer's field.** It pulls Sentinel-2 crop-health (NDVI) and weather data through the [FieldSat MCP server](https://github.com/Deezer056/fieldsat-mcp-server) (a course-provided server that I extended with a field-summary tool and deployed to AWS).
 - **Remembers the conversation.** Follow-up questions work, and each farmer's field is remembered across chats (PostgreSQL).
 - **Shows its working.** The chat UI ([agrivibe-frontend](https://github.com/Deezer056/agrivibe-frontend), Gradio) shows which agents ran, what each found, and the cited sources under every answer.
 - **Stays safe.** Guardrails block prompt injection, hide phone numbers, stop runaway loops and withhold unsafe fertiliser doses.
